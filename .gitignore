@@ -1,2 +1,7 @@
 *.txt
+.dub
+degast
+*.exe
+*.o
+*.a
 
