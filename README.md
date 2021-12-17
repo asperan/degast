@@ -1,7 +1,7 @@
 # DeGAST
 ## D enhanced Git Automation Simple Toolbox
 
-degast is a software to help users apply the (conventional commit guidelines)[https://www.conventionalcommits.org/en/v1.0.0-beta.2/] to allow an easier automation.
+degast is a software to help users apply the [conventional commit guidelines](https://www.conventionalcommits.org/en/v1.0.0-beta.2/) to allow an easier automation.
 
 ### Run
 ```
