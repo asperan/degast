@@ -252,7 +252,7 @@ private:
     {
         string header = type ~ (typeScope.isNull ? "" : "(" ~ typeScope.get ~ ")") ~ ": " ~ summary;
         return header ~ "\n" ~ (messageBody.empty
-                ? "" : messageBody ~ "\n") ~ (footer.empty ? "" : footer ~ "\n");
+                ? "" : "\n" ~ messageBody ~ "\n") ~ (footer.empty ? "" : "\n" ~ footer ~ "\n");
     }
 
     bool askConfirmation()
