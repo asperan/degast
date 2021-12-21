@@ -5,22 +5,39 @@ import subcommand;
 
 void parseArguments(string[] args)
 {
-    import std.string : empty;
-
-    if (args.empty)
+    if (args.length == 0)
     {
         stderr.writeln("No subcommand specified");
         printHelpAndExit(1, stderr);
     }
-    else if (args[0]!in subcommands)
+    else
     {
-        stderr.writeln("Subcommand '" ~ args[0] ~ "' not recognized");
+        runCommandBySmallestUniquePrefix(args[0], args[1 .. $]);
+    }
+}
+
+private void runCommandBySmallestUniquePrefix(string subcommandPrefix, string[] subcommandArgs)
+{
+    import std.algorithm.searching : startsWith;
+    import std.algorithm.iteration : filter;
+    import std.array : array;
+
+    string[] prefixedCommands = subcommands.keys.filter!(s => s.startsWith(subcommandPrefix)).array;
+
+    if (prefixedCommands.length <= 0) // no subcommand with prefix
+    {
+        stderr.writeln("No subcommand with prefix '" ~ subcommandPrefix ~ "'");
+        printHelpAndExit(1, stderr);
+    }
+    else if (prefixedCommands.length >= 2) // More than one subcommand with the prefix
+    {
+        stderr.writeln("More than one subcommand with prefix '" ~ subcommandPrefix ~ "'");
         printHelpAndExit(1, stderr);
     }
     else
     {
-        SubCommand subcommand = subcommands[args[0]];
-        subcommand.parseOptions(args[1 .. $]);
+        SubCommand subcommand = subcommands[prefixedCommands[0]];
+        subcommand.parseOptions(subcommandArgs);
         subcommand.run();
     }
 }
