@@ -9,5 +9,6 @@
 	"description": "D enhanced Git Automation Simple Toolbox.",
 	"license": "MIT",
 	"name": "degast",
-	"targetType": "executable"
+	"targetType": "executable",
+    "mainSourceFile": "source/degast.d"
 }
