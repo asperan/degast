@@ -2,20 +2,6 @@ module subcommand.commit;
 
 import subcommand.subcommand : SubCommand;
 import std.stdio : writeln, readln, writefln;
-//dfmt off
-private enum string[] defaultHeaderType = [
-    "chore",
-    "feat",
-    "fix",
-    "build",
-    "ci",
-    "docs",
-    "perf",
-    "refactor",
-    "style",
-    "test",
-];
-//dfmt on
 
 /**
  * Commit subcommand. It allows to interactively create a conventional commit message and use it to commit the staged changes.
@@ -99,7 +85,7 @@ private:
         import std.range : enumerate;
         import std.algorithm.iteration : each;
 
-        string[] types = defaultHeaderType ~ getCustomHeaderTypes();
+        string[] types = defaultHeaderType ~ getCustomHeaderTypes(getCommitSummaries);
         bool valueIsChosen = false;
         auto enumeratedTypes = types.enumerate;
         while (!valueIsChosen)
@@ -132,18 +118,6 @@ private:
         assert(0);
     }
 
-    string[] getCustomHeaderTypes()
-    {
-        import std.algorithm.iteration : map, filter, fold;
-        import std.array : array;
-        import std.algorithm.searching : canFind;
-
-        return getCommitSummaries.map!(c => c.type) // Map to commit type
-        .fold!((a, b) => a.canFind(b) ? a : a ~ b)(cast(string[])[]) // Unique values
-            .filter!(t => !defaultHeaderType.canFind(t)) // Non-default values
-            .array;
-    }
-
     Nullable!string askScope()
     {
         import std.conv : to, ConvException;
@@ -151,7 +125,7 @@ private:
         import std.range : enumerate;
         import std.algorithm.iteration : each;
 
-        string[] scopes = getCustomScopes();
+        string[] scopes = getCustomScopes(getCommitSummaries);
         bool valueIsChosen = false;
         auto enumeratedScopes = scopes.enumerate;
         while (!valueIsChosen)
@@ -186,18 +160,6 @@ private:
             }
         }
         assert(0);
-    }
-
-    string[] getCustomScopes()
-    {
-        import std.algorithm.iteration : map, filter, fold;
-        import std.array : array;
-        import std.algorithm.searching : canFind;
-
-        return getCommitSummaries.filter!(c => !c.typeScope.isNull) // Filter commit with non-null scope
-        .map!(c => c.typeScope.get) // Map to scope
-            .fold!((a, b) => a.canFind(b) ? a : a ~ b)(cast(string[])[]) // Unique values
-            .array;
     }
 
     string askSummary()

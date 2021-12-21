@@ -1,6 +1,6 @@
 module glparser;
 
-GitCommitSummary[] getCommitSummaries()
+GitCommitSummary[] getCommitSummaries(string revisionSpec = "--all")
 {
     import std.process : executeShell;
     import std.stdio : stderr;
@@ -25,7 +25,7 @@ GitCommitSummary[] getCommitSummaries()
         }
         else
         {
-            auto gitLogList = executeShell("git log --all --pretty=\"%s\"");
+            auto gitLogList = executeShell("git log --pretty=\"%s\" " ~ revisionSpec);
             if (gitLogList.status > 0)
             {
                 stderr.writeln(gitLogList.output);
@@ -37,6 +37,45 @@ GitCommitSummary[] getCommitSummaries()
             }
         }
     }
+}
+
+// dfmt off
+enum string[] defaultHeaderType = [
+    "feat",
+    "fix",
+    "perf",
+    "test",
+    "refactor",
+    "style",
+    "docs",
+    "build",
+    "ci",
+    "chore",
+];
+//dfmt on
+
+string[] getCustomHeaderTypes(GitCommitSummary[] summaries)
+{
+    import std.algorithm.iteration : map, filter, fold;
+    import std.array : array;
+    import std.algorithm.searching : canFind;
+
+    return summaries.map!(c => c.type) // Map to commit type
+    .fold!((a, b) => a.canFind(b) ? a : a ~ b)(cast(string[])[]) // Unique values
+        .filter!(t => !defaultHeaderType.canFind(t)) // Non-default values
+        .array;
+}
+
+string[] getCustomScopes(GitCommitSummary[] summaries)
+{
+    import std.algorithm.iteration : map, filter, fold;
+    import std.array : array;
+    import std.algorithm.searching : canFind;
+
+    return summaries.filter!(c => !c.typeScope.isNull) // Filter commit with non-null scope
+    .map!(c => c.typeScope.get) // Map to scope
+        .fold!((a, b) => a.canFind(b) ? a : a ~ b)(cast(string[])[]) // Unique values
+        .array;
 }
 
 private GitCommitSummary parseGitCommitLine(string commitString)
