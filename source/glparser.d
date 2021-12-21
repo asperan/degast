@@ -4,20 +4,38 @@ GitCommitSummary[] getCommitSummaries()
 {
     import std.process : executeShell;
     import std.stdio : stderr;
-    import std.string : split, chomp;
+    import std.string : split, strip;
     import std.algorithm.iteration : map;
     import std.array : array;
     import core.stdc.stdlib : exit;
 
-    auto gitLogList = executeShell("git log --pretty=\"%s\"");
-    if (gitLogList.status > 0)
+    auto checkNumOfCommits = executeShell("git rev-list --count --all");
+    if(checkNumOfCommits.status > 0)
     {
-        stderr.writeln(gitLogList.output);
-        return exit(gitLogList.status);
+        stderr.writeln(checkNumOfCommits.output);
+        return exit(checkNumOfCommits.status);
     }
     else
     {
-        return gitLogList.output.chomp.split("\n").map!(s => parseGitCommitLine(s)).array;
+        import std.conv : to;
+        size_t numOfCommits = checkNumOfCommits.output.strip.to!size_t;
+        if(numOfCommits == 0)
+        {
+            return [];
+        }
+        else
+        {
+            auto gitLogList = executeShell("git log --all --pretty=\"%s\"");
+            if (gitLogList.status > 0)
+            {
+                stderr.writeln(gitLogList.output);
+                return exit(gitLogList.status);
+            }
+            else
+            {
+                return gitLogList.output.strip.split("\n").map!(s => parseGitCommitLine(s)).array;
+            }
+        }
     }
 }
 
@@ -28,7 +46,7 @@ private GitCommitSummary parseGitCommitLine(string commitString)
     import std.string : strip;
 
     auto headerRegex = regex(r"^\w+");
-    auto scopeRegex = regex(r"(?<=\()\w+(?=\))");
+    auto scopeRegex = regex(r"(?<=\()\w+(-\w+)?(?=\))");
     auto messageRegex = regex(r"(?<=:).*");
     auto headerMatch = commitString.matchFirst(headerRegex);
     string header = headerMatch.hit.strip;
@@ -39,6 +57,41 @@ private GitCommitSummary parseGitCommitLine(string commitString)
     string message = messageMatch.hit.strip;
     return scopeMatch.empty ? GitCommitSummary(header,
             message) : GitCommitSummary(header, zcope, message);
+}
+
+unittest
+{
+    string commit = "feat(git): test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && !commitSummary.typeScope.isNull
+        && commitSummary.typeScope.get == "git"
+        && commitSummary.message == "test message"
+    );
+}
+
+unittest
+{
+    string commit = "feat: test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && commitSummary.typeScope.isNull
+        && commitSummary.message == "test message"
+    );
+}
+
+unittest
+{
+    string commit = "feat(github-actions): test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && !commitSummary.typeScope.isNull
+        && commitSummary.typeScope.get == "github-actions"
+        && commitSummary.message == "test message"
+    );
 }
 
 struct GitCommitSummary

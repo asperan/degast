@@ -251,8 +251,11 @@ private:
             string summary, string messageBody, string footer)
     {
         string header = type ~ (typeScope.isNull ? "" : "(" ~ typeScope.get ~ ")") ~ ": " ~ summary;
-        return header ~ "\n" ~ (messageBody.empty
-                ? "" : messageBody ~ "\n") ~ (footer.empty ? "" : footer ~ "\n");
+        // dfmt off
+        return header ~ "\n"
+                ~ (messageBody.empty ? "" : "\n" ~ messageBody ~ "\n")
+                ~ (footer.empty ? "" : "\n" ~ footer ~ "\n");
+        //dfmt on
     }
 
     bool askConfirmation()
