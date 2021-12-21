@@ -146,7 +146,7 @@ private:
             }
             else
             {
-                return "^$(git describe)";
+                return "^$(git describe $(git rev-list --tags --max-count=1)) --all";
             }
         }
     }
