@@ -4,20 +4,38 @@ GitCommitSummary[] getCommitSummaries()
 {
     import std.process : executeShell;
     import std.stdio : stderr;
-    import std.string : split, chomp;
+    import std.string : split, strip;
     import std.algorithm.iteration : map;
     import std.array : array;
     import core.stdc.stdlib : exit;
 
-    auto gitLogList = executeShell("git log --pretty=\"%s\"");
-    if (gitLogList.status > 0)
+    auto checkNumOfCommits = executeShell("git rev-list --count --all");
+    if(checkNumOfCommits.status > 0)
     {
-        stderr.writeln(gitLogList.output);
-        return exit(gitLogList.status);
+        stderr.writeln(checkNumOfCommits.output);
+        return exit(checkNumOfCommits.status);
     }
     else
     {
-        return gitLogList.output.chomp.split("\n").map!(s => parseGitCommitLine(s)).array;
+        import std.conv : to;
+        size_t numOfCommits = checkNumOfCommits.output.strip.to!size_t;
+        if(numOfCommits == 0)
+        {
+            return [];
+        }
+        else
+        {
+            auto gitLogList = executeShell("git log --all --pretty=\"%s\"");
+            if (gitLogList.status > 0)
+            {
+                stderr.writeln(gitLogList.output);
+                return exit(gitLogList.status);
+            }
+            else
+            {
+                return gitLogList.output.strip.split("\n").map!(s => parseGitCommitLine(s)).array;
+            }
+        }
     }
 }
 
