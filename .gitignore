@@ -4,4 +4,4 @@ degast
 *.exe
 *.o
 *.a
-
+*-test-application*
