@@ -28,7 +28,7 @@ private GitCommitSummary parseGitCommitLine(string commitString)
     import std.string : strip;
 
     auto headerRegex = regex(r"^\w+");
-    auto scopeRegex = regex(r"(?<=\()\w+(?=\))");
+    auto scopeRegex = regex(r"(?<=\()\w+(-\w+)?(?=\))");
     auto messageRegex = regex(r"(?<=:).*");
     auto headerMatch = commitString.matchFirst(headerRegex);
     string header = headerMatch.hit.strip;
@@ -39,6 +39,41 @@ private GitCommitSummary parseGitCommitLine(string commitString)
     string message = messageMatch.hit.strip;
     return scopeMatch.empty ? GitCommitSummary(header,
             message) : GitCommitSummary(header, zcope, message);
+}
+
+unittest
+{
+    string commit = "feat(git): test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && !commitSummary.typeScope.isNull
+        && commitSummary.typeScope.get == "git"
+        && commitSummary.message == "test message"
+    );
+}
+
+unittest
+{
+    string commit = "feat: test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && commitSummary.typeScope.isNull
+        && commitSummary.message == "test message"
+    );
+}
+
+unittest
+{
+    string commit = "feat(github-actions): test message";
+    GitCommitSummary commitSummary = parseGitCommitLine(commit);
+    assert(
+        commitSummary.type == "feat"
+        && !commitSummary.typeScope.isNull
+        && commitSummary.typeScope.get == "github-actions"
+        && commitSummary.message == "test message"
+    );
 }
 
 struct GitCommitSummary
