@@ -135,8 +135,10 @@ private:
         auto checkTagsPresence = executeShell("git rev-list --tags");
         if (checkTagsPresence.status > 0)
         {
-            // TODO: failed to check tags
-            assert(0);
+            import std.stdio : stderr;
+            import core.stdc.stdlib : exit;
+            stderr.writeln("ERROR: failed to retrieve the tag list");
+            return exit(checkTagsPresence.status);
         }
         else
         {
