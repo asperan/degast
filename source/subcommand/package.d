@@ -3,6 +3,7 @@ module subcommand;
 public import subcommand.subcommand;
 public import subcommand.commit;
 public import subcommand.changelog;
+import subcommand.tag;
 
 /**
  * Map of available subcommands.
@@ -13,6 +14,7 @@ static this()
 {
     subcommands["commit"] = new Commit();
     subcommands["changelog"] = new Changelog();
+    subcommands["tag"] = new Tag();
 }
 
 string getSubCommandHelpMessage()
