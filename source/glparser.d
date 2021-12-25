@@ -98,7 +98,7 @@ string getLastTagDynamic()
         }
         else
         {
-            return "git describe $(git rev-list --tags --max-count=1) HEAD";
+            return "git describe $(git rev-list --tags --max-count=1)";
         }
     }
 }
