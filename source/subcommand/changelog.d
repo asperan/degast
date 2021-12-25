@@ -55,7 +55,7 @@ private:
         import std.algorithm.iteration : filter;
         import std.array : array;
         
-        GitCommitSummary[] commitFromLastTag = getCommitSummaries(getLastTagDynamicRef());
+        GitCommitSummary[] commitFromLastTag = getCommitSummaries("^$(" ~ getLastTagDynamic() ~ ")");
         // Order of types: default = list order, custom = alphabetical order
         string[] sortedTypes = defaultHeaderType ~ getCustomHeaderTypes(commitFromLastTag).sort.array;
 

@@ -78,7 +78,7 @@ string[] getCustomScopes(GitCommitSummary[] summaries)
         .array;
 }
 
-string getLastTagDynamicRef()
+string getLastTagDynamic()
 {
     import std.process : executeShell;
     import std.string : strip, empty;
@@ -98,7 +98,7 @@ string getLastTagDynamicRef()
         }
         else
         {
-            return "^$(git describe $(git rev-list --tags --max-count=1)) --all";
+            return "git describe $(git rev-list --tags --max-count=1) --all";
         }
     }
 }
