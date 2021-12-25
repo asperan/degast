@@ -78,6 +78,31 @@ string[] getCustomScopes(GitCommitSummary[] summaries)
         .array;
 }
 
+string getLastTagDynamicRef()
+{
+    import std.process : executeShell;
+    import std.string : strip, empty;
+    auto checkTagsPresence = executeShell("git rev-list --tags");
+    if (checkTagsPresence.status > 0)
+    {
+        import std.stdio : stderr;
+        import core.stdc.stdlib : exit;
+        stderr.writeln("ERROR: failed to retrieve the tag list");
+        return exit(checkTagsPresence.status);
+    }
+    else
+    {
+        if (checkTagsPresence.output.strip.empty)
+        {
+            return "";
+        }
+        else
+        {
+            return "^$(git describe $(git rev-list --tags --max-count=1)) --all";
+        }
+    }
+}
+
 private GitCommitSummary parseGitCommitLine(string commitString)
 {
     import std.regex : regex, matchFirst;
