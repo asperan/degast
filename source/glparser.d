@@ -1,41 +1,25 @@
 module glparser;
 
+public import shell_utils;
+
 GitCommitSummary[] getCommitSummaries(string revisionSpec = "--all")
 {
-    import std.process : executeShell;
-    import std.stdio : stderr;
-    import std.string : split, strip;
+    import std.string : split;
     import std.algorithm.iteration : map;
     import std.array : array;
-    import core.stdc.stdlib : exit;
+    import std.conv : to;
 
-    auto checkNumOfCommits = executeShell("git rev-list --count --all");
-    if(checkNumOfCommits.status > 0)
+    size_t numOfCommits = getShellOutput("git rev-list --count --all", "Failed to get total commit count.").to!size_t;
+    if(numOfCommits == 0)
     {
-        stderr.writeln(checkNumOfCommits.output);
-        return exit(checkNumOfCommits.status);
+        return [];
     }
     else
     {
-        import std.conv : to;
-        size_t numOfCommits = checkNumOfCommits.output.strip.to!size_t;
-        if(numOfCommits == 0)
-        {
-            return [];
-        }
-        else
-        {
-            auto gitLogList = executeShell("git log --pretty=\"%s\" " ~ revisionSpec);
-            if (gitLogList.status > 0)
-            {
-                stderr.writeln(gitLogList.output);
-                return exit(gitLogList.status);
-            }
-            else
-            {
-                return gitLogList.output.strip.split("\n").map!(s => parseGitCommitLine(s)).array;
-            }
-        }
+        return getShellOutput("git log --pretty=\"%s\" " ~ revisionSpec, "Failed to get the commit summary list.")
+            .split("\n")
+            .map!(s => parseGitCommitLine(s))
+            .array;
     }
 }
 
@@ -80,26 +64,14 @@ string[] getCustomScopes(GitCommitSummary[] summaries)
 
 string getLastTagDynamic()
 {
-    import std.process : executeShell;
-    import std.string : strip, empty;
-    auto checkTagsPresence = executeShell("git rev-list --tags");
-    if (checkTagsPresence.status > 0)
+    import std.string : empty;
+    if (getShellOutput("git rev-list --tags", "Failed to retrieve the tag list").empty)
     {
-        import std.stdio : stderr;
-        import core.stdc.stdlib : exit;
-        stderr.writeln("ERROR: failed to retrieve the tag list");
-        return exit(checkTagsPresence.status);
+        return "";
     }
     else
     {
-        if (checkTagsPresence.output.strip.empty)
-        {
-            return "";
-        }
-        else
-        {
-            return "git describe $(git rev-list --tags --max-count=1)";
-        }
+        return "git describe $(git rev-list --tags --max-count=1)";
     }
 }
 
