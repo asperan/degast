@@ -1,14 +1,14 @@
 {
-	"authors": [
-		"Alex Speranza"
-	],
-	"copyright": "Copyright © 2021, Alex Speranza",
-	"dependencies": {
-		"cli-args": "~>3.0.1"
-	},
-	"description": "D enhanced Git Automation Simple Toolbox.",
-	"license": "MIT",
-	"name": "degast",
-	"targetType": "executable",
-    "mainSourceFile": "source/degast.d"
+    "authors" : [
+      "Alex Speranza"
+    ],
+    "copyright" : "Copyright © 2021, Alex Speranza",
+    "dependencies" : {
+      "cli-args" : "~>3.0.1"
+    },
+    "description" : "D enhanced Git Automation Simple Toolbox.",
+    "license" : "MIT",
+    "name" : "degast",
+    "targetType" : "executable",
+    "mainSourceFile" : "source/degast.d"
 }
