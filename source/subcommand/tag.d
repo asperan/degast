@@ -80,9 +80,11 @@ private:
     {
         import std.conv : to;
         import std.regex : regex, matchFirst;
-        enum string tagPattern = r"(\d+)\.(\d+).(\d+)";
+        enum string tagPattern = r"(\d+)\.(\d+)\.(\d+)";
+        enum string scopePattern = r"(\(\w+(-\w+)?\))?";
         enum string majorUpdatePattern = r"BREAKING CHANGE:";
-        enum string minorUpdatePattern = r"feat";
+        enum string minorUpdatePattern = r"feat(?=" ~ scopePattern ~ r":)";
+        enum string patchUpdatePattern = r"fix(?=" ~ scopePattern  ~ r":)";
         immutable string gitLogCommand = "git log ^'" ~ from ~ "' HEAD --pretty='%B'";
         auto fromVersion = from.matchFirst(regex(tagPattern));
         immutable uint major = fromVersion[1].to!uint;
@@ -91,15 +93,26 @@ private:
         immutable string gitLogOutput = getShellOutput(gitLogCommand, "Failed to get git log");
         if (!gitLogOutput.matchFirst(regex(majorUpdatePattern)).empty)
         {
-            return fromVersion.pre ~ (major + 1).to!string ~ ".0.0"; 
+            return fromVersion.pre ~ (major + 1).to!string ~ ".0.0" ~ "+" ~ getCurrentIsoDate();
         }
         else if (!gitLogOutput.matchFirst(regex(minorUpdatePattern)).empty)
         {
-            return fromVersion.pre ~ major.to!string ~ "." ~ (minor + 1).to!string ~ ".0";
+            return fromVersion.pre ~ major.to!string ~ "." ~ (minor + 1).to!string ~ ".0" ~ "+" ~ getCurrentIsoDate();
+        }
+        else if (!gitLogOutput.matchFirst(regex(patchUpdatePattern)).empty)
+        {
+            return fromVersion.pre ~ major.to!string ~ "." ~ minor.to!string ~ "." ~ (patch + 1).to!string ~ "+" ~ getCurrentIsoDate();
         }
         else
         {
-            return fromVersion.pre ~ major.to!string ~ "." ~ minor.to!string ~ "." ~ (patch + 1).to!string;
+            return fromVersion.pre ~ major.to!string ~ "." ~ minor.to!string ~ "." ~ patch.to!string ~ "+" ~ getCurrentIsoDate();
         }
+    }
+
+    string getCurrentIsoDate()
+    {
+        import std.datetime.systime : Clock, SysTime;
+        import std.datetime.date : Date;
+        return (cast(Date) Clock.currTime()).toISOString();
     }
 }
