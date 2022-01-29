@@ -24,10 +24,9 @@ public:
         import asperan.cli_args.simple_option_parser : SimpleOptionParserBuilder;
 
         this.skipConfirmation = false;
-        this.optionParser = new SimpleOptionParserBuilder().addOption("-nc",
-                "--no-confirm", "Skip the confirmation request and execute the commit.", () {
-            this.skipConfirmation = true;
-        }).build();
+        this.optionParser = new SimpleOptionParserBuilder()
+            .addOption("-nc", "--no-confirm", "Skip the confirmation request and execute the commit.", () { this.skipConfirmation = true; })
+            .build();
     }
 
     /**
