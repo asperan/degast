@@ -111,7 +111,7 @@ private:
             string messagesWithoutScopes = commits.filter!(c => c.typeScope.isNull).map!(c => indentMessage(c.message)).join("\n");
             if (!messagesWithoutScopes.strip.empty)
             {
-                typeChangelog ~= getHeaderForScope("other") ~ "\n" ~ messagesWithoutScopes;
+                typeChangelog ~= "\n" ~ getHeaderForScope("other") ~ "\n" ~ messagesWithoutScopes;
             }
             return typeChangelog.nullable;
         }
