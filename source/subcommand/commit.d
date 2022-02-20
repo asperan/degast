@@ -77,6 +77,8 @@ public:
 private:
     import std.string : empty, strip;
 
+    enum string onlyConventionalCommitSpec = r"--no-merges -i -E --grep='^\w+(\(.+\))?:.+'";
+
     string askType()
     {
         import std.conv : to, ConvException;
@@ -84,7 +86,7 @@ private:
         import std.range : enumerate;
         import std.algorithm.iteration : each;
 
-        string[] types = defaultHeaderType ~ getCustomHeaderTypes(getCommitSummaries);
+        string[] types = defaultHeaderType ~ getCustomHeaderTypes(getCommitSummaries(onlyConventionalCommitSpec));
         bool valueIsChosen = false;
         auto enumeratedTypes = types.enumerate;
         while (!valueIsChosen)
@@ -124,7 +126,7 @@ private:
         import std.range : enumerate;
         import std.algorithm.iteration : each;
 
-        string[] scopes = getCustomScopes(getCommitSummaries);
+        string[] scopes = getCustomScopes(getCommitSummaries(onlyConventionalCommitSpec));
         bool valueIsChosen = false;
         auto enumeratedScopes = scopes.enumerate;
         while (!valueIsChosen)
