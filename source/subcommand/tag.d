@@ -1,13 +1,13 @@
 module subcommand.tag;
 
-import subcommand.subcommand;
+import asperan.cli_args.option_parser : Subcommand;
 import glparser;
 
-final class Tag : SubCommand
+final class Tag : Subcommand
 {
-    import asperan.cli_args.simple_option_parser : CommandLineOptionParser;
+    import asperan.cli_args.option_parser : CommandLineOptionParser;
 private:
-
+    enum string description = "manage repository tags";
     CommandLineOptionParser optionParser;
     bool isNextVersionRequested;
     string prefix;
@@ -16,8 +16,9 @@ public:
 
     this()
     {
-        import asperan.cli_args.simple_option_parser : SimpleOptionParserBuilder;
-        this.optionParser = new SimpleOptionParserBuilder()
+        super("tag", description);
+        import asperan.cli_args.recursive_option_parser : RecursiveOptionParserBuilder;
+        this.optionParser = new RecursiveOptionParserBuilder()
             .addOption("-n", "--next", "calculate the next version based on commits", () { this.isNextVersionRequested = true; })
             .addOption("-p", "--prefix", "add a prefix to the version", (s) { this.prefix = s; })
             .build();
@@ -25,25 +26,20 @@ public:
         this.prefix = "";
     }
 
-    void parseOptions(string[] arguments)
+    override CommandLineOptionParser getOptionParser()
     {
-        import std.stdio : writeln;
-        const string[] remainingArgs = this.optionParser.parse(arguments);
-        if (remainingArgs.length > 0)
+        return this.optionParser;
+    }
+
+    override void run(string[] arguments)
+    {
+        if (arguments.length > 0)
         {
+            import std.stdio : writeln;
             writeln("WARNING: some arguments are not recognized options, they will be ignored.");
         }
-    }
-
-    void run()
-    {
         string requestedTag = getRequestedTag();
         printTag(requestedTag);
-    }
-
-    string getDescription()
-    {
-        return "manage repository tags";
     }
 
 private:

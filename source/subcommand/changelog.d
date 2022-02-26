@@ -1,11 +1,11 @@
 module subcommand.changelog;
 
-import subcommand.subcommand;
+import asperan.cli_args.option_parser : Subcommand;
 import glparser;
 
-class Changelog : SubCommand
+class Changelog : Subcommand
 {
-    import asperan.cli_args.simple_option_parser : CommandLineOptionParser;
+    import asperan.cli_args.option_parser : CommandLineOptionParser;
     import std.typecons : Nullable, nullable;
 
 private:
@@ -13,12 +13,15 @@ private:
     bool generateMarkdown;
     Nullable!string fileName;
 
+    enum string description = "Generate a changelog of changes from the last tag or a given branch";
+
 public:
 
     this()
     {
-        import asperan.cli_args.simple_option_parser : SimpleOptionParserBuilder;
-        this.optionParser = new SimpleOptionParserBuilder()
+        super("changelog", description);
+        import asperan.cli_args.recursive_option_parser : RecursiveOptionParserBuilder;
+        this.optionParser = new RecursiveOptionParserBuilder()
             .addOption("-m", "--markdown", "Generate a Markdown changelog.", () { this.generateMarkdown = true; })
             .addOption("-o", "--output", "Print the changelog on the specified file", (fileName) { this.fileName = fileName.nullable; })
             .build();
@@ -26,25 +29,20 @@ public:
         this.fileName = Nullable!string();
     }
 
-    void parseOptions(string[] arguments)
+    override CommandLineOptionParser getOptionParser()
     {
-        import std.stdio : writeln;
-        const string[] remainingArgs = this.optionParser.parse(arguments);
-        if (remainingArgs.length > 0)
+        return this.optionParser;
+    }
+
+    override void run(string[] arguments)
+    {
+        if (arguments.length > 0)
         {
+            import std.stdio : writeln;
             writeln("WARNING: some arguments are not recognized options, they will be ignored.");
         }
-    }
-
-    void run()
-    {
         const string changelog = generateChangelog();
         printChangelog(changelog);
-    }
-
-    string getDescription()
-    {
-        return "Generate a changelog of changes from the last tag or a given branch";
     }
 
 private:

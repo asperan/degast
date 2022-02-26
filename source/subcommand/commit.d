@@ -1,18 +1,19 @@
 module subcommand.commit;
 
-import subcommand.subcommand : SubCommand;
+import asperan.cli_args.option_parser : Subcommand;
 import std.stdio : writeln, readln, writefln;
 
 /**
  * Commit subcommand. It allows to interactively create a conventional commit message and use it to commit the staged changes.
  */
-final class Commit : SubCommand
+final class Commit : Subcommand
 {
-    import asperan.cli_args.simple_option_parser : CommandLineOptionParser;
+    import asperan.cli_args.option_parser : CommandLineOptionParser;
     import std.typecons : Nullable, nullable;
     import glparser;
 
 private:
+    enum string description = "Open interactive conventional commit generator";
     CommandLineOptionParser optionParser;
     bool skipConfirmation;
 public:
@@ -21,35 +22,29 @@ public:
      */
     this()
     {
-        import asperan.cli_args.simple_option_parser : SimpleOptionParserBuilder;
+        super("commit", description);
+        import asperan.cli_args.recursive_option_parser : RecursiveOptionParserBuilder;
 
         this.skipConfirmation = false;
-        this.optionParser = new SimpleOptionParserBuilder()
+        this.optionParser = new RecursiveOptionParserBuilder()
             .addOption("-nc", "--no-confirm", "Skip the confirmation request and execute the commit.", () { this.skipConfirmation = true; })
             .build();
     }
 
-    /**
-     * Parse arguments with the class OptionParser.
-     *
-     * The remaining arguments are ignored.
-     * Params:
-     *  arguments = cli argument list.
-     */
-    void parseOptions(string[] arguments)
+    override CommandLineOptionParser getOptionParser()
     {
-        const string[] remainingArgs = this.optionParser.parse(arguments);
-        if (remainingArgs.length > 0)
-        {
-            writeln("WARNING: some arguments are not recognized options, they will be ignored.");
-        }
+        return this.optionParser;
     }
 
     /**
      * Run the command.
      */
-    void run()
+    override void run(string[] arguments)
     {
+        if (arguments.length > 0)
+        {
+            writeln("WARNING: some arguments are not recognized options, they will be ignored.");
+        }
         string chosenType = askType();
         Nullable!string chosenScope = askScope();
         string summary = askSummary();
@@ -67,11 +62,6 @@ public:
             }
         }
         gitCommit(commitMessage);
-    }
-
-    string getDescription()
-    {
-        return "Open interactive conventional commit generator";
     }
 
 private:
